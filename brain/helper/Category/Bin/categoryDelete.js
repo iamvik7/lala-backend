@@ -2,12 +2,12 @@ const Db = require("../../../utils/db");
 const { COLLECTION_NAMES, COLLECTIONS } = require("../../../utils/modelEnums");
 const ObjectId = require("mongoose").Types.ObjectId;
 
-exports.categoryDelete = async (req, session) => {
+exports.categoryDelete = async (categoryId, session) => {
   try {
     // Fetch the category to be deleted
     const [category, categoryError] = await Db.fetchOne({
       collection: COLLECTION_NAMES.CATEGORYMODEL,
-      query: { _id: req.params.categoryId },
+      query: { _id: categoryId },
     });
 
     if (categoryError) {
@@ -24,7 +24,7 @@ exports.categoryDelete = async (req, session) => {
         collection: COLLECTION_NAMES.CATEGORYMODEL,
         query: [
           {
-            $match: { _id: new ObjectId(req.params.categoryId) },
+            $match: { _id: new ObjectId(categoryId) },
           },
           {
             $graphLookup: {
@@ -129,7 +129,7 @@ exports.categoryDelete = async (req, session) => {
     if (deletedProductsError) {
       return [null, deletedProductsError.message || deletedProductsError];
     }
-    
+
     return [`Category and subcategories deleted successfully!`, null];
   } catch (error) {
     return [null, error.message || error];

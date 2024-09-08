@@ -15,7 +15,7 @@ exports.deleteCategory = async (req, res) => {
   session.startTransaction();
   try {
     const [deleteCategory, deleteCategoryError] =
-      await categoryBinService.categoryDelete(req, session);
+      await categoryBinService.categoryDelete(req.params.categoryId, session);
     if (deleteCategoryError) {
       await session.abortTransaction();
       await session.endSession();
@@ -48,7 +48,7 @@ exports.categoryRestore = async (req, res) => {
   session.startTransaction();
   try {
     const [restoredCategory, restoredCategoryError] =
-    await categoryBinService.categoryRstore(req, session);
+      await categoryBinService.categoryRstore(req.params.categoryId, session);
     console.log(restoredCategoryError === RESTOREERROR.ISSUBCATEGORYERROR)
     if(restoredCategoryError === RESTOREERROR.ISSUBCATEGORYERROR) {
       await session.abortTransaction();

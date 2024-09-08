@@ -26,7 +26,7 @@ superadminCategoryRouter.delete(
   deleteCategory
 );
 superadminCategoryRouter.post(
-  "/delete/:categoryId",
+  "/restore/:categoryId",
   [
     isAuthenticated,
     AccessControlMiddleware.checkAccess(

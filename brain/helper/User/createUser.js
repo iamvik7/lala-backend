@@ -15,7 +15,7 @@ exports.createUser = async (body, type, session) => {
     }
 
     if (user) {
-      return [null, "Email already associated with user!" ];
+      return [null, "Email already associated with user!"];
     }
 
     const [addUser, addUserError] = await Db.create({
@@ -34,10 +34,7 @@ exports.createUser = async (body, type, session) => {
     });
 
     if (addUserError) {
-      return [
-        null,
-        "Error while creating user try again later: " + addUserError,
-      ];
+      return [null, addUserError];
     }
     return ["User added successfully!", null];
   } catch (error) {

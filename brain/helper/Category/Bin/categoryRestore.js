@@ -6,12 +6,12 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 const ISSUBCATEGORYERROR = "ISSUBCATEGORY"
 
-exports.categoryRstore = async (req, session) => {
+exports.categoryRstore = async (categoryId, session) => {
   try {
     // Fetch the category to be deleted
     const [category, categoryError] = await Db.fetchOne({
       collection: COLLECTION_NAMES.CATEGORYBINMODEL,
-      query: { _id: req.params.categoryId },
+      query: { _id: categoryId },
     });
 
     if (categoryError) {
@@ -28,7 +28,7 @@ exports.categoryRstore = async (req, session) => {
         query: [
           {
             $match: {
-              _id: new ObjectId(req.params.categoryId),
+              _id: new ObjectId(categoryId),
             },
           },
           {
@@ -62,7 +62,7 @@ exports.categoryRstore = async (req, session) => {
           {
             $group: {
               _id: "$_id",
-              name: {$first: "$name"},
+              name: { $first: "$name" },
               subcategories: {
                 $push: "$subcategories",
               },
@@ -92,7 +92,7 @@ exports.categoryRstore = async (req, session) => {
       if (findParentError) {
         return [null, findParentError.message || findParentError];
       }
-      
+
       return [findParent, ISSUBCATEGORYERROR];
     }
 
@@ -102,7 +102,7 @@ exports.categoryRstore = async (req, session) => {
         collection: COLLECTION_NAMES.CATEGORYBINMODEL,
         query: [
           {
-            $match: { _id: new ObjectId(req.params.categoryId) },
+            $match: { _id: new ObjectId(categoryId) },
           },
           {
             $graphLookup: {
@@ -130,8 +130,6 @@ exports.categoryRstore = async (req, session) => {
         subcategoriesAndProductsError.message || subcategoriesAndProductsError,
       ];
     }
-
-    // update the product isActive to false
 
     // Insert the category, subcategories, and products into the bin collections
     const [binCategories, binCategoriesError] = await Db.insertMany({

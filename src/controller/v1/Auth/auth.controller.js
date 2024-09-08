@@ -8,8 +8,9 @@ const {
   badRequestResponse,
   successResponse,
   notFoundResponse,
-  alreadyExists,
   cookieResponse,
+  unprocessableEntityResponse,
+  alreadyExists,
 } = require("../../../../brain/utils/response");
 const { userSchema } = require("../../../joi/v1/User");
 
@@ -34,14 +35,26 @@ exports.register = async (req, res) => {
       USER_ROLES.USER,
       session
     );
+    if (
+      addUserError === `Email already associated with user!` ||
+      addUserError ===
+        `${req.body.phone} :Phone number already associated with an existing user.`
+    ) {
+      await session.abortTransaction();
+      await session.endSession();
+      return alreadyExists({
+        res,
+        message: addUserError,
+      });
+    }
 
     if (addUserError) {
       await session.abortTransaction();
       await session.endSession();
-      return unprocessableEntityResponse({
+      return serverErrorResponse({
         res,
         message: "Error while creating user!",
-        error: addUserError.message || addUserError,
+        error: addUserError,
       });
     }
 
