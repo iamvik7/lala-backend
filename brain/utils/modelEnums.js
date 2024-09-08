@@ -3,6 +3,7 @@ const categoryModel = require("../model/Category/category.model");
 const categoryBinModel = require("../model/Category/category.bin.model");
 const productModel = require("../model/Product/product.model");
 const productBinModel = require("../model/Product/product.bin.model");
+const cartModel = require("../model/Cart/cart.model")
 
 exports.COLLECTIONS = {
   USER_COLLECTION: "users",
@@ -10,6 +11,7 @@ exports.COLLECTIONS = {
   CATEGORY_BIN_COLLECTION: "categorybins",
   PRODUCT_COLLECTION: "products",
   PRODUCT_BIN_COLLECTION: "productbins",
+  CART_COLLECTION: "carts"
 };
 
 exports.DB_MODELS = {
@@ -18,6 +20,7 @@ exports.DB_MODELS = {
   categoryBinModel: categoryBinModel,
   productModel: productModel,
   productBinModel: productBinModel,
+  cartModel: cartModel
 };
 
 exports.COLLECTION_NAMES = {
@@ -25,5 +28,6 @@ exports.COLLECTION_NAMES = {
   CATEGORYMODEL: "categoryModel",
   CATEGORYBINMODEL: "categoryBinModel",
   PRODUCTMODEL: "productModel",
-  PRODUCTBINMODEL: "productBinModel"
+  PRODUCTBINMODEL: "productBinModel",
+  CARTMODEL: "cartModel"
 };

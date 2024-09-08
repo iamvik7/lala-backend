@@ -101,7 +101,7 @@ exports.updateCategory = async (req, res) => {
   const session = await Db.mongoose.startSession();
   session.startTransaction();
   try {
-    const valid = categorySchema.categoryValidator.validate(req.body, {
+    const valid = categorySchema.updateCategoryValidator.validate(req.body, {
       abortEarly: false,
     });
 
@@ -136,7 +136,8 @@ exports.updateCategory = async (req, res) => {
       });
     }
     const [category, categoryError] = await categoryService.updateCategory(
-      req,
+      req.params,
+      req.body,
       session
     );
 

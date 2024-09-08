@@ -10,8 +10,11 @@ const AccessControlMiddleware = require("../../../../brain/middleware/accessCont
 const {
   changePassword,
 } = require("../../../controller/v1/User/user.controller");
+const cartRouter = require('./cart')
 
 const userRouter = Router();
+
+userRouter.use('/cart', cartRouter);
 
 userRouter.put(
   "/password",
