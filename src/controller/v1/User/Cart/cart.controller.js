@@ -10,7 +10,6 @@ const {
   badRequestResponse,
   notFoundResponse,
 } = require("../../../../../brain/utils/response");
-const ObjectId = Db.mongoose.Types.ObjectId;
 
 exports.addToCart = async (req, res) => {
   const session = await Db.mongoose.startSession();
@@ -148,7 +147,7 @@ exports.getCartitems = async (req, res) => {
     const matchState = [
       {
         $match: {
-          userId: new ObjectId(req.user.id),
+          userId: Db.mongoose.Types.ObjectId.createFromHexString(req.user.id),
         },
       },
       {
@@ -170,18 +169,36 @@ exports.getCartitems = async (req, res) => {
           _id: "$userId",
           products: {
             $push: {
-              product: {
-                $arrayElemAt: ["$product", 0],
+              $cond: {
+                if: { $gt: [{ $size: "$product" }, 0] }, // Check if product array is not empty
+                then: {
+                  product: { $arrayElemAt: ["$product", 0] },
+                  quantity: "$products.quantity",
+                },
+                else: null, // Use null if no product found
               },
-              quantity: "$products.quantity",
             },
           },
           totalPrice: { $first: "$totalPrice" },
         },
       },
+      {
+        $project: {
+          _id: 1,
+          userId: "$_id",
+          products: {
+            $filter: {
+              input: "$products",
+              as: "prod",
+              cond: { $ne: ["$$prod", null] }, // Filter out null values
+            },
+          },
+          totalPrice: 1,
+        },
+      },
     ];
 
-    const [cartItems, cartItemsError] = await Db.aggregate({
+    const [[cartItems], cartItemsError] = await Db.aggregate({
       collection: COLLECTION_NAMES.CARTMODEL,
       query: matchState,
     });
@@ -192,8 +209,7 @@ exports.getCartitems = async (req, res) => {
         error: cartItemsError.message || cartItemsError,
       });
     }
-    console.log(cartItems);
-    if (cartItems.length === 0 || cartItems.products.length === 0) {
+    if (cartItems === null || cartItems?.products?.length === 0) {
       return notFoundResponse({
         res,
         message: "No products found in cart!",

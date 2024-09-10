@@ -6,6 +6,7 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      unique: true
     },
     products: [
       {
@@ -19,6 +20,9 @@ const cartSchema = new mongoose.Schema(
           min: 0,
         },
       },
+      {
+        _id: false
+      }
     ],
     totalPrice: {
       type: Number,
@@ -68,7 +72,7 @@ cartSchema.methods.addProducts = async function (productId, quantity) {
   const existingProductIndex = this.products.findIndex(
     (p) => p.productId.toString() === productId.toString()
   );
-  if (quantity < 1) {
+  if (quantityToAdd < 1) {
     throw new Error("Quantity of product should not be less then 1!");
   }
 
@@ -79,7 +83,7 @@ cartSchema.methods.addProducts = async function (productId, quantity) {
     } else {
       this.products[existingProductIndex].quantity = quantityToAdd;
     }
-  } else if (quantity > 0) {
+  } else if (quantityToAdd > 0) {
     // Add new product only if quantity is positive
     const product = await Product.findById(productId);
     if (product) {
