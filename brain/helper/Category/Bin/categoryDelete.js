@@ -53,8 +53,7 @@ exports.categoryDelete = async (categoryId, session) => {
       ];
     }
 
-    // update the product isActive to false
-
+    
     // Insert the category, subcategories, and products into the bin collections
     const [binCategories, binCategoriesError] = await Db.insertMany({
       collection: COLLECTION_NAMES.CATEGORYBINMODEL,
@@ -79,6 +78,7 @@ exports.categoryDelete = async (categoryId, session) => {
       return [null, binProductsError.message || binProductsError];
     }
 
+    // update the product isActive to false
     const [updatedProducts, updatedProductsError] = await Db.updateMany({
       collection: COLLECTION_NAMES.PRODUCTBINMODEL,
       query: {

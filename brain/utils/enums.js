@@ -15,13 +15,21 @@ const RBAC_ACTIONS = {
   DELETE_OWN: "deleteOwn",
 };
 
+const ORDER_STATUS = {
+  PROCESSING: "processing",
+  CONFIRMED: "confirmed",
+  DELIVERED: "delivered",
+  CANCELLED: "cancelled",
+};
+
 const RBAC_RESOURCES = {
   USER: "user",
   ADMIN: "admin",
   CATEGORY: "category",
   PRODUCT: "product",
-  CART:"cart",
-  //   ADDRESS:'address',
+  CART: "cart",
+  ORDER: "oder",
+  ADDRESS: "address",
   //   LIVE: 'live',
   //   CATEGORY: 'category',
   //   DASHBOARD:'dashboard',
@@ -32,4 +40,5 @@ module.exports = {
   USER_ROLES,
   RBAC_ACTIONS,
   RBAC_RESOURCES,
+  ORDER_STATUS,
 };

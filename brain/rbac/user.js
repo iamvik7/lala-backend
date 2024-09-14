@@ -10,4 +10,16 @@ module.exports = {
     "update:own": ["*"],
     "delete:own": ["*"],
   },
+  [RBAC_RESOURCES.ORDER]: {
+    "create:own": ["*"],
+    "read:own": ["*"],
+    "update:own": ["*"],
+    "delete:own": ["*"],
+  },
+  [RBAC_RESOURCES.ADDRESS]: {
+    "create:own": ["*"],
+    "read:own": ["*"],
+    "update:own": ["*"],
+    "delete:own": ["*"],
+  },
 };
