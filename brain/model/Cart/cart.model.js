@@ -19,6 +19,7 @@ const cartSchema = new mongoose.Schema(
           default: 1,
           min: 0,
         },
+        _id: false
       },
       {
         _id: false

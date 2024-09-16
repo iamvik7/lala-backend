@@ -20,7 +20,7 @@ const ResponseStatus = {
   ALREADY_EXISTS: 409,
   NOT_ALLOWED: 405,
   LIMIT_EXCEEDED: 429,
-  TEMPORARY_REDIRECT: 307
+  TEMPORARY_REDIRECT: 307,
 };
 
 const successResponse = ({ res, message, data }) => {
@@ -35,6 +35,16 @@ const successResponse = ({ res, message, data }) => {
     success: status.SUCCESS,
     message,
   });
+};
+
+const outOfStockError = ({ res, message, data }) => {
+  if (data) {
+    return res.status(ResponseStatus.UNPROCESSABLE_ENTITY).send({
+      success: status.FAILURE,
+      message,
+      data: data,
+    });
+  }
 };
 const alreadyExists = ({ res, message, data }) => {
   return res.status(ResponseStatus.ALREADY_EXISTS).send({
@@ -127,15 +137,14 @@ const serverErrorResponse = async ({
       message = "An error occurred, please try again later or contact support";
     if (!error) error = message;
 
-    console.log("server error response here: ", message, error)
+    console.log("server error response here: ", message, error);
     return res.status(ResponseStatus.INTERNAL_ERROR).send({
       success: status.FAILURE,
       message: message,
       error: error,
     });
-  }
-  catch (error) {
-    logger.error("Error :", error)
+  } catch (error) {
+    logger.error("Error :", error);
     return res.status(ResponseStatus.INTERNAL_ERROR).send({
       success: status.FAILURE,
       message: message,
@@ -155,8 +164,7 @@ const accessDeniedResponse = ({ res, message, error }) => {
   });
 };
 const notAllowedResponse = ({ res, message, error }) => {
-  if (!message)
-    message = "Method Not Allowed";
+  if (!message) message = "Method Not Allowed";
   if (!error) error = message;
   return res.status(ResponseStatus.NOT_ALLOWED).send({
     success: status.FAILURE,
@@ -192,8 +200,7 @@ const paymentRequiredResponse = ({ res, message, data, error }) => {
   });
 };
 const limitExceeded = ({ res, message, data, error }) => {
-  if (!message)
-    message = "You have exceeded the limit.";
+  if (!message) message = "You have exceeded the limit.";
   if (!error) error = message;
   return res.status(ResponseStatus.LIMIT_EXCEEDED).send({
     success: status.FAILURE,
@@ -208,18 +215,16 @@ const cookieResponse = ({ res, data }) => {
     secure: true,
     httpOnly: true,
     sameSite: "None",
-    expiresIn: EXPIRE_TOKEN
-  }
+    expiresIn: EXPIRE_TOKEN,
+  };
 
-  res.cookie('token', data?.token);
+  res.cookie("token", data?.token);
 
-  return res
-    .status(ResponseStatus.SUCCESS)
-    .json({
-      success: true,
-      token: data?.token,
-      payload
-    });
+  return res.status(ResponseStatus.SUCCESS).json({
+    success: true,
+    token: data?.token,
+    payload,
+  });
 };
 
 module.exports = {
@@ -237,5 +242,6 @@ module.exports = {
   alreadyExists,
   notAllowedResponse,
   limitExceeded,
-  temporaryRedirectResponse
+  temporaryRedirectResponse,
+  outOfStockError
 };

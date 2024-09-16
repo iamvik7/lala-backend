@@ -4,11 +4,13 @@ const {
   serverErrorResponse,
   badRequestResponse,
   successResponse,
+  outOfStockError,
 } = require("../../../../../brain/utils/response");
 
 exports.createOrderFromCart = async (req, res) => {
   const session = await Db.mongoose.startSession();
   session.startTransaction();
+
   try {
     const { products, addressId } = req.body;
 
@@ -17,12 +19,12 @@ exports.createOrderFromCart = async (req, res) => {
       session.endSession();
       return badRequestResponse({
         res,
-        message: "Products and addressId is required!",
+        message: "Products and addressId are required!",
       });
     }
 
     const [createOrder, createOrderError] = await Db.create({
-      collection: COLLECTION_NAMES,
+      collection: COLLECTION_NAMES.ORDERMODEL,
       body: {
         products,
         userId: req.user.id,
@@ -31,37 +33,14 @@ exports.createOrderFromCart = async (req, res) => {
       session,
     });
 
-    // if (createOrderError) {
-    //   await session.abortTransaction();
-    //   session.endSession();
-    //   return serverErrorResponse({
-    //     res,
-    //     url: req.url,
-    //     method: req.method,
-    //     message: "Error while placing order",
-    //     error: createOrderError.message || createOrderError,
-    //   });
-    // }
-
-    await session.commitTransaction();
-    session.endSession();
-    return successResponse({
-      res,
-      message: "Order placed successfully!",
-      data: createOrder,
-    });
-  } catch (error) {
     if (
-      error.message.startsWith(
-        "The following products are out of stock:"
-      )
+      createOrderError?.startsWith("The following products are out of stock:")
     ) {
-      const outOfStockProductIds = error.message
+      const outOfStockProductIds = createOrderError
         .split(": ")[1]
         .split(", ")
         .map((id) => id.trim());
 
-      // Fetch the out-of-stock products for the response
       const [outOfStockProducts, outOfStockProductsError] = await Db.fetchAll({
         collection: COLLECTION_NAMES.PRODUCTMODEL,
         query: { _id: { $in: outOfStockProductIds } },
@@ -74,23 +53,60 @@ exports.createOrderFromCart = async (req, res) => {
           res,
           url: req.url,
           method: req.method,
-          message: "Error while finding out of stock products",
+          message: "Error while finding out-of-stock products",
           error: outOfStockProductsError.message || outOfStockProductsError,
         });
       }
-      // Filter out the out-of-stock products from the order
+
       const updatedProducts = req.body.products.filter(
         (product) =>
           !outOfStockProductIds.includes(product.productId.toString())
       );
 
+      const [inStockProducts, inStockProductsError] = await Db.fetchAll({
+        collection: COLLECTION_NAMES.PRODUCTMODEL,
+        query: {
+          _id: { $in: updatedProducts.map((product) => product.productId) },
+        },
+      });
+
+      if (inStockProductsError) {
+        await session.abortTransaction();
+        session.endSession();
+        return serverErrorResponse({
+          res,
+          url: req.url,
+          method: req.method,
+          message: "Error while finding in-stock products",
+          error: inStockProductsError.message || inStockProductsError,
+        });
+      }
+
       await session.abortTransaction();
       session.endSession();
-      return successResponse({
+      return outOfStockError({
         res,
         message: "Some products are out of stock!",
-        data: [...outOfStockProducts, ...updatedProducts],
+        data: { outOfStock: outOfStockProducts, inStock: inStockProducts },
       });
     }
+
+    await session.commitTransaction();
+    session.endSession();
+    return successResponse({
+      res,
+      message: "Order placed successfully!",
+      data: createOrder,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return serverErrorResponse({
+      res,
+      url: req.url,
+      method: req.method,
+      message: "Error while placing order",
+      error: error.message || error,
+    });
   }
 };
