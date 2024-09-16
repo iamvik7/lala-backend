@@ -1,7 +1,6 @@
 const { default: mongoose } = require("mongoose");
-const  addressDesign  = require("./address.schema");
+const addressDesign = require("./address.schema");
 
-const addressSchema = new mongoose.Schema(addressDesign, {timestamps: true});
+const addressSchema = new mongoose.Schema(addressDesign, { timestamps: true });
 
-module.exports = mongoose.model('Address', addressSchema);
-
+module.exports = mongoose.model("Address", addressSchema);

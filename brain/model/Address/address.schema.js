@@ -1,3 +1,5 @@
+const { mongoose } = require("mongoose");
+
 const addressDesign = {
   recipent: {
     type: String,
@@ -30,11 +32,13 @@ const addressDesign = {
     lowercase: true,
   },
   zipcode: {
-    type: String,
+    type: Number,
     required: true,
-    trim: true,
-    lowercase: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
   },
 };
 
-module.exports = addressDesign
+module.exports = addressDesign;

@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { register, login, logout } = require("../../../controller/v1/auth/auth.controller");
 const { isAuthenticated } = require("../../../../brain/middleware/isAuthenticated");
+const Db = require("../../../../brain/utils/db");
 
 const authRouter = Router();
 
@@ -8,7 +9,8 @@ authRouter.post('/register', register);
 authRouter.post('/login', login);
 authRouter.post('/logout', isAuthenticated, logout);
 authRouter.get('', isAuthenticated,  async (req, res) => {
-    console.log(req.user)
+    const id = Db.mongoose.Types.ObjectId.createFromHexString('6656bae7c7e2eb7976a52ad1');
+    console.log(id);
     return res.json("hello");
 })
 
