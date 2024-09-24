@@ -1,7 +1,6 @@
 const { userService } = require("../../../../brain/helper/User");
 const Db = require("../../../../brain/utils/db");
 const { USER_ROLES } = require("../../../../brain/utils/enums");
-const { generateToken } = require("../../../../brain/utils/generateToken");
 const { COLLECTION_NAMES } = require("../../../../brain/utils/modelEnums");
 const {
   serverErrorResponse,
@@ -9,7 +8,6 @@ const {
   successResponse,
   notFoundResponse,
   cookieResponse,
-  unprocessableEntityResponse,
   alreadyExists,
 } = require("../../../../brain/utils/response");
 const { userSchema } = require("../../../joi/v1/User");

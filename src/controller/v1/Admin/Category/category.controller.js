@@ -17,6 +17,7 @@ const {
   successResponse,
   unauthorizedResponse,
   alreadyExists,
+  limitExceeded,
 } = require("../../../../../brain/utils/response");
 
 const { categorySchema } = require("../../../../joi/v1/Category");
@@ -38,6 +39,18 @@ exports.addCategory = async (req, res) => {
       if (error instanceof multer.MulterError) {
         // return res.json(error)
         console.error("error in multer file upload : ", error);
+        if (error === "File too large" || error.message === "File too large") {
+          return limitExceeded({
+            res,
+            message:
+              "Image size is too large only files upto 10 MB is supported!",
+            error: error.message || error,
+          });
+        }
+        return serverErrorResponse({
+          res,
+          message: error.message || error,
+        });
       }
       if (
         !req.files ||
@@ -114,7 +127,7 @@ exports.addCategory = async (req, res) => {
           await handleImageUpload(
             req.files[CATEGORY_IMAGES.CATEGORY_LOGO],
             CLOUDINARY_CATEGORY_BUCKET // Folder name in Cloudinary
-          )
+          ),
         ]);
 
         if (categoryIconerror || categoryLogoerror) {
