@@ -4,6 +4,11 @@ const USER_ROLES = {
   USER: "user",
 };
 
+const CATEGORY_IMAGES = {
+  CATEGORY_LOGO: "logo",
+  CATEGORY_ICON: "icon",
+  ERROR_MESSAGE: "Only one image can be uploaded at a time",
+};
 const RBAC_ACTIONS = {
   CREATE_ANY: "createAny",
   CREATE_OWN: "createOwn",
@@ -41,4 +46,5 @@ module.exports = {
   RBAC_ACTIONS,
   RBAC_RESOURCES,
   ORDER_STATUS,
+  CATEGORY_IMAGES,
 };

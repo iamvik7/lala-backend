@@ -1,32 +1,9 @@
 const { mongoose } = require("mongoose");
-const { COLLECTIONS } = require("../../utils/modelEnums");
+const categoryDesign = require("./category.schema");
 
-const categorySchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      trim: true,
-      required: true,
-      lowercase: true,
-    },
-    logo: {
-      type: String,
-      required: true,
-    },
-    parent: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      default: null,
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+const categorySchema = new mongoose.Schema(categoryDesign, {
+  timestamps: true,
+});
 
 categorySchema.pre("save", async function (next) {
   if (this.isModified("name")) {

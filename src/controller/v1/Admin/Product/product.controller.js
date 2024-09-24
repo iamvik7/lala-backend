@@ -1,5 +1,6 @@
 const { productService } = require("../../../../../brain/helper/Product");
 const Db = require("../../../../../brain/utils/db");
+const { COLLECTION_NAMES } = require("../../../../../brain/utils/modelEnums");
 const {
   serverErrorResponse,
   badRequestResponse,
@@ -51,6 +52,43 @@ exports.addProduct = async (req, res) => {
     return serverErrorResponse({
       res,
       message: "Error while creating product!",
+      error: error.message || error,
+    });
+  }
+};
+
+exports.getSpecificProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    console.log(productId);
+    const [product, productError] = await Db.fetchOne({
+      collection: COLLECTION_NAMES.PRODUCTMODEL,
+      query: { _id: productId },
+      // projection: {__v: 0, createdBy:}
+    });
+
+    if (productError) {
+      return serverErrorResponse({
+        res,
+        message: "Error while fetching product details!",
+        error: productError.message || productError,
+      });
+    }
+
+    if (!product) {
+      return badRequestResponse({
+        res,
+        message: "Product not found with this id!",
+      });
+    }
+    return successResponse({
+      res,
+      data: { product, instock: product.stock > 5 },
+    });
+  } catch (error) {
+    return serverErrorResponse({
+      res,
+      message: "Error while fetching product details!",
       error: error.message || error,
     });
   }

@@ -1,29 +1,17 @@
 const Db = require("../../utils/db");
 const { COLLECTION_NAMES } = require("../../utils/modelEnums");
 
-exports.categoryAdd = async (req, session) => {
+exports.categoryAdd = async (name, parent, logo, icon, userId, session) => {
   try {
-    const { name, logo, parent } = req.body;
-    const [findCategory, findCategoryError] = await Db.fetchOne({
-      collection: COLLECTION_NAMES.CATEGORYMODEL,
-      query: { name },
-    });
-
-    if (findCategoryError) {
-      return [null, findCategoryError.message || findCategoryError];
-    }
-
-    if (findCategory) {
-      return [null, "Category already exist!"];
-    }
 
     const [category, categoryError] = await Db.create({
       collection: COLLECTION_NAMES.CATEGORYMODEL,
       body: {
         name,
         logo,
+        icon,
         parent,
-        createdBy: req.user.id,
+        createdBy: userId,
       },
       session,
     });

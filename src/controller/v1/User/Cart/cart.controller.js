@@ -209,7 +209,8 @@ exports.getCartitems = async (req, res) => {
         error: cartItemsError.message || cartItemsError,
       });
     }
-    if (cartItems === null || cartItems?.products?.length === 0) {
+    console.log(cartItems);
+    if (cartItems === null || cartItems?.products?.length === 0 || !cartItems) {
       return notFoundResponse({
         res,
         message: "No products found in cart!",

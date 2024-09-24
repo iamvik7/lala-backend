@@ -52,10 +52,6 @@ const productDesign = {
     type: Boolean,
     default: true,
   },
-  inStock: {
-    type: Boolean,
-    default: true,
-  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

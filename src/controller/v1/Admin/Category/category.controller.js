@@ -1,5 +1,13 @@
+const multer = require("multer");
 const { categoryService } = require("../../../../../brain/helper/Category");
 const { checkCreatedby } = require("../../../../../brain/utils/checkCreatedBy");
+const {
+  deleteFromCloudinary,
+  upload,
+} = require("../../../../../brain/utils/cloudinary");
+const {
+  handleImageUpload,
+} = require("../../../../../brain/utils/handleImageUpload");
 const Db = require("../../../../../brain/utils/db");
 const { COLLECTION_NAMES } = require("../../../../../brain/utils/modelEnums");
 const {
@@ -8,44 +16,157 @@ const {
   unprocessableEntityResponse,
   successResponse,
   unauthorizedResponse,
+  alreadyExists,
 } = require("../../../../../brain/utils/response");
+
 const { categorySchema } = require("../../../../joi/v1/Category");
+const { CATEGORY_IMAGES } = require("../../../../../brain/utils/enums");
+const {
+  CLOUDINARY_CATEGORY_BUCKET,
+} = require("../../../../../brain/utils/config");
 
 exports.addCategory = async (req, res) => {
   const session = await Db.mongoose.startSession();
   session.startTransaction();
   try {
-    const valid = categorySchema.categoryValidator.validate(req.body, {
-      abortEarly: false,
-    });
-    if (valid.error) {
-      await session.abortTransaction();
-      await session.endSession();
-      return badRequestResponse({
-        res,
-        error: valid.error.message,
-      });
-    }
+    const UploadMultiple = upload.fields([
+      { name: CATEGORY_IMAGES.CATEGORY_LOGO, maxCount: 10 },
+      { name: CATEGORY_IMAGES.CATEGORY_ICON, maxCount: 10 },
+    ]);
 
-    const [category, categoryError] = await categoryService.categoryAdd(
-      req,
-      session
-    );
-    if (categoryError) {
-      await session.abortTransaction();
-      await session.endSession();
-      return unprocessableEntityResponse({
-        res,
-        message: categoryError,
-        error: categoryError.message || categoryError,
-      });
-    }
+    UploadMultiple(req, res, async (error) => {
+      if (error instanceof multer.MulterError) {
+        // return res.json(error)
+        console.error("error in multer file upload : ", error);
+      }
+      if (
+        !req.files ||
+        !req.files[CATEGORY_IMAGES.CATEGORY_LOGO] ||
+        !req.files[CATEGORY_IMAGES.CATEGORY_ICON]
+      ) {
+        await session.abortTransaction();
+        await session.endSession();
+        return badRequestResponse({
+          res,
+          message: "Required images are missing.",
+        });
+      }
 
-    await session.commitTransaction();
-    await session.endSession();
-    return successResponse({
-      res,
-      data: category,
+      try {
+        const valid = categorySchema.categoryValidator.validate(
+          { name: req.body.name, parent: req.body.parent },
+          {
+            abortEarly: false,
+          }
+        );
+        if (valid.error) {
+          await session.abortTransaction();
+          await session.endSession();
+          return badRequestResponse({
+            res,
+            error: valid.error.message,
+          });
+        }
+
+        const [findCategory, findCategoryError] = await Db.fetchOne({
+          collection: COLLECTION_NAMES.CATEGORYMODEL,
+          query: { name: req.body.name },
+        });
+
+        if (findCategoryError) {
+          await session.abortTransaction();
+          await session.endSession();
+          return serverErrorResponse({
+            res,
+            message: "Error while searching existing category!",
+            error: findCategoryError.message || findCategoryError,
+          });
+        }
+
+        if (findCategory) {
+          await session.abortTransaction();
+          await session.endSession();
+          return alreadyExists({
+            res,
+            message: req.body.name + " : category already exists!",
+          });
+        }
+        if (
+          req.files[CATEGORY_IMAGES.CATEGORY_ICON].length > 1 ||
+          req.files[CATEGORY_IMAGES.CATEGORY_LOGO].length > 1
+        ) {
+          await session.abortTransaction();
+          session.endSession();
+          return badRequestResponse({
+            res,
+            message: "Only 1 logo and icon image is allowed!",
+          });
+        }
+
+        const [
+          [categoryIcon, categoryIconerror],
+          [categoryLogo, categoryLogoerror],
+        ] = await Promise.all([
+          await handleImageUpload(
+            req.files[CATEGORY_IMAGES.CATEGORY_ICON],
+            CLOUDINARY_CATEGORY_BUCKET // Folder name in Cloudinary
+          ),
+          await handleImageUpload(
+            req.files[CATEGORY_IMAGES.CATEGORY_LOGO],
+            CLOUDINARY_CATEGORY_BUCKET // Folder name in Cloudinary
+          )
+        ]);
+
+        if (categoryIconerror || categoryLogoerror) {
+          await session.abortTransaction();
+          await deleteFromCloudinary(categoryIcon || categoryLogo);
+          await session.endSession();
+          return serverErrorResponse({
+            res,
+            error: categoryIconerror || categoryLogoerror,
+            url: req.url,
+            method: req.method,
+          });
+        }
+        const [icon] = categoryIcon || null;
+        const [logo] = categoryLogo || null;
+
+        // return res.json({logo, icon});
+        const [category, categoryError] = await categoryService.categoryAdd(
+          req.body.name,
+          req.body.parent,
+          logo,
+          icon,
+          req.user.id,
+          session
+        );
+
+        if (categoryError) {
+          await session.abortTransaction();
+          await session.endSession();
+          return unprocessableEntityResponse({
+            res,
+            message: categoryError,
+            error: categoryError.message || categoryError,
+          });
+        }
+
+        await session.commitTransaction();
+        await session.endSession();
+        return successResponse({
+          res,
+          data: category,
+        });
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+
+        return serverErrorResponse({
+          res,
+          message: "Error while uploading images!",
+          error: error.message || error,
+        });
+      }
     });
   } catch (error) {
     await session.abortTransaction();

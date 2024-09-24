@@ -9,6 +9,7 @@ const {
 } = require("../../../../../brain/utils/enums");
 const {
   addProduct,
+  getSpecificProduct,
 } = require("../../../../controller/v1/Admin/Product/product.controller");
 const productRouter = Router();
 
@@ -24,4 +25,15 @@ productRouter.post(
   addProduct
 );
 
+productRouter.get(
+  "/get/:productId",
+  [
+    isAuthenticated,
+    AccessControlMiddleware.checkAccess(
+      RBAC_ACTIONS.READ_ANY,
+      RBAC_RESOURCES.PRODUCT
+    ),
+  ],
+  getSpecificProduct
+);
 module.exports = productRouter;

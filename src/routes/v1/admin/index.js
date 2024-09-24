@@ -30,4 +30,5 @@ adminRouter.post(
   getAllUsers
 );
 
+
 module.exports = adminRouter;
