@@ -1,7 +1,7 @@
 const { Router } = require("express");
-const { register, login, logout } = require("../../../../brain/helper/User");
 const { isAuthenticated } = require("../../../../brain/middleware/isAuthenticated");
 const Db = require("../../../../brain/utils/db");
+const { login, register, logout } = require("../../../controller/v1/Auth/auth.controller");
 
 const authRouter = Router();
 
