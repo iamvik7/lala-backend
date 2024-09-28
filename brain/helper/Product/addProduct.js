@@ -1,26 +1,27 @@
 const Db = require("../../utils/db");
 const { COLLECTION_NAMES } = require("../../utils/modelEnums");
 
-exports.createProduct = async (req, session) => {
+exports.createProduct = async ({
+  name,
+  description,
+  price,
+  quantity,
+  stock,
+  weight,
+  images,
+  tags,
+  categoryId,
+  brand,
+  userId,
+  session,
+}) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      quantity,
-      stock,
-      weight,
-      images,
-      tags,
-      categoryId,
-    } = req.body;
-
     const [findProduct, findProductError] = await Db.fetchOne({
       collection: COLLECTION_NAMES.PRODUCTMODEL,
       query: { name },
     });
     if (findProductError) {
-      retrun[(null, findProductError)];
+      return [null, findProductError];
     }
     if (findProduct) {
       return [null, "Product already exists!"];
@@ -31,7 +32,7 @@ exports.createProduct = async (req, session) => {
       query: { _id: categoryId },
     });
     if (findCategoryError) {
-      retrun[(null, findCategoryError)];
+      return [null, findCategoryError];
     }
 
     if (!findCategory) {
@@ -39,12 +40,24 @@ exports.createProduct = async (req, session) => {
     }
     const [product, productError] = await Db.create({
       collection: COLLECTION_NAMES.PRODUCTMODEL,
-      body: { ...req.body, createdBy: req.user.id },
+      body: {
+        name,
+        description,
+        price,
+        quantity,
+        stock,
+        weight,
+        images,
+        tags,
+        categoryId,
+        brand,
+        createdBy: userId,
+      },
       session,
     });
 
     if (productError) {
-      retrun[(null, productError)];
+      return [null, productError];
     }
     return [product, null];
   } catch (error) {

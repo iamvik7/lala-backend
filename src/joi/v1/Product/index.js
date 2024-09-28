@@ -18,10 +18,6 @@ const productValidator = Joi.object({
     "any.required": "Enter the stock.",
     "number.empty": "Stock can not be empty.",
   }),
-  images: Joi.array().required().messages({
-    "any.required": "Insert product images.",
-    "array.empty": "Images can not be empty.",
-  }),
   categoryId: Joi.string().required().messages({
     "any.required": "Select the category.",
     "string.empty": "Category can not be empty.",
@@ -34,7 +30,10 @@ const productValidator = Joi.object({
     "any.required": "Enter the price.",
     "number.empty": "Price can not be empty.",
   }),
-  tags: Joi.array().optional(),
+  tags: Joi.array().required().messages({
+    "any.required": "Enter the brand name.",
+    "number.empty": "Brand name can not be empty.",
+  }),
 });
 
 module.exports.productSchema = {

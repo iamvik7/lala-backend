@@ -9,6 +9,12 @@ const CATEGORY_IMAGES = {
   CATEGORY_ICON: "icon",
   ERROR_MESSAGE: "Only one image can be uploaded at a time",
 };
+
+const PRODUCT_IMAGES = {
+  IMAGES: "images",
+  ERROR_MESSAGE: "Only five image can be uploaded at a time",
+};
+
 const RBAC_ACTIONS = {
   CREATE_ANY: "createAny",
   CREATE_OWN: "createOwn",
@@ -47,4 +53,5 @@ module.exports = {
   RBAC_RESOURCES,
   ORDER_STATUS,
   CATEGORY_IMAGES,
+  PRODUCT_IMAGES,
 };

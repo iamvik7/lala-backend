@@ -43,7 +43,7 @@ exports.addCategory = async (req, res) => {
           return limitExceeded({
             res,
             message:
-              "Image size is too large only files upto 10 MB is supported!",
+              "Image size is too large only image upto 10 MB is supported!",
             error: error.message || error,
           });
         }
