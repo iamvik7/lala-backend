@@ -12,11 +12,13 @@ const {
 } = require("../../../controller/v1/Admin/User/admin.user.controller");
 const categoryRouter = require("./category");
 const productRouter = require("./product");
+const brandRouter = require("./brand");
 
 const adminRouter = Router();
 
 adminRouter.use("/category", categoryRouter);
 adminRouter.use("/product", productRouter);
+adminRouter.use("/brand", brandRouter);
 
 adminRouter.post(
   "/users",
