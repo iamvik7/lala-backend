@@ -22,9 +22,9 @@ const productValidator = Joi.object({
     "any.required": "Select the category.",
     "string.empty": "Category can not be empty.",
   }),
-  brand: Joi.string().required().messages({
+  brandId: Joi.string().required().messages({
     "any.required": "Add the brand name.",
-    "string.empty": "Brand name can not be empty.",
+    "string.empty": "Brand id can not be empty.",
   }),
   price: Joi.number().required().messages({
     "any.required": "Enter the price.",

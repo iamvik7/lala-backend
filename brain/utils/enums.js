@@ -46,7 +46,7 @@ const RBAC_RESOURCES = {
   CART: "cart",
   ORDER: "oder",
   ADDRESS: "address",
-  //   LIVE: 'live',
+  BRAND: "brand",
   //   CATEGORY: 'category',
   //   DASHBOARD:'dashboard',
   //   PLAN:"plan",

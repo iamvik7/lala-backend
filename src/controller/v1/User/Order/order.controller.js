@@ -110,3 +110,19 @@ exports.createOrderFromCart = async (req, res) => {
     });
   }
 };
+
+exports.cancelOrder = async (req, res) => {
+  const session = await Db.mongoose.startSession();
+  session.startTransaction();
+  try {
+    
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return serverErrorResponse({
+      res,
+      error: error.message,
+      method: req.method,
+    })
+  }
+}

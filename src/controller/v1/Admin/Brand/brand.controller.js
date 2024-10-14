@@ -7,15 +7,25 @@ const {
   badRequestResponse,
   successResponse,
   unprocessableEntityResponse,
+  alreadyExists,
+  notFoundResponse,
 } = require("../../../../../brain/utils/response");
-const { upload } = require("../../../../../brain/utils/cloudinary");
+const {
+  upload,
+  deleteFromCloudinary,
+} = require("../../../../../brain/utils/cloudinary");
 const { COLLECTION_NAMES } = require("../../../../../brain/utils/modelEnums");
-const { handleImageUpload } = require("../../../../../brain/utils/handleImageUpload");
-const { CLOUDINARY_BRAND_BUCKET } = require("../../../../../brain/utils/config");
+const {
+  handleImageUpload,
+} = require("../../../../../brain/utils/handleImageUpload");
+const {
+  CLOUDINARY_BRAND_BUCKET,
+} = require("../../../../../brain/utils/config");
+const { updatedBy } = require("../../../../../brain/model/Brand/brand.design");
 
 exports.addBrand = async (req, res) => {
   const session = await Db.mongoose.startSession();
-  await session.startTransaction();
+  session.startTransaction();
   try {
     const UploadMultiple = upload.fields([
       { name: BRAND_IMAGES.BRAND_LOGO, maxCount: 10 },
@@ -76,7 +86,7 @@ exports.addBrand = async (req, res) => {
           await session.endSession();
           return alreadyExists({
             res,
-            message: req.body.name + " : brand already exists!",
+            message: req.body.name + ": brand already exists!",
           });
         }
         if (req.files[BRAND_IMAGES.BRAND_LOGO].length > 1) {
@@ -88,12 +98,10 @@ exports.addBrand = async (req, res) => {
           });
         }
 
-        const [[brandLogo, brandLogoerror]] = await Promise.all([
-          await handleImageUpload(
-            req.files[BRAND_IMAGES.BRAND_LOGO],
-            CLOUDINARY_BRAND_BUCKET // Folder name in Cloudinary
-          ),
-        ]);
+        const [brandLogo, brandLogoerror] = await handleImageUpload(
+          req.files[BRAND_IMAGES.BRAND_LOGO],
+          CLOUDINARY_BRAND_BUCKET // Folder name in Cloudinary
+        );
 
         if (brandLogoerror) {
           await session.abortTransaction();
@@ -109,13 +117,12 @@ exports.addBrand = async (req, res) => {
         const [logo] = brandLogo || null;
 
         // return res.json({logo});
-        console.log(req.user)
         const [brand, brandError] = await Db.create({
           collection: COLLECTION_NAMES.BRANDMODEL,
           body: {
             name: req.body.name,
             logo: logo,
-            createdBy: req?.user?.id || null,
+            createdBy: req.user.id,
             updatedBy: null,
           },
           session,
@@ -152,6 +159,222 @@ exports.addBrand = async (req, res) => {
     session.endSession();
     return serverErrorResponse({
       res,
+      message: "Error while adding brand",
+      error: error.message || error,
+    });
+  }
+};
+
+exports.updateBrand = async (req, res) => {
+  const session = await Db.mongoose.startSession();
+  session.startTransaction();
+  try {
+    const UploadMultiple = upload.fields([
+      { name: BRAND_IMAGES.BRAND_LOGO, maxCount: 10 },
+    ]);
+
+    UploadMultiple(req, res, async (error) => {
+      if (error instanceof multer.MulterError) {
+        // return res.json(error)
+        console.error("error in multer file upload : ", error);
+        if (error === "File too large" || error.message === "File too large") {
+          return limitExceeded({
+            res,
+            message:
+              "Image size is too large only image upto 10 MB is supported!",
+            error: error.message || error,
+          });
+        }
+        return serverErrorResponse({
+          res,
+          message: error.message || error,
+        });
+      }
+
+      try {
+        const { id } = req.params;
+        const [findBrand, findBrandError] = await Db.fetchOne({
+          collection: COLLECTION_NAMES.BRANDMODEL,
+          query: { _id: id },
+        });
+
+        if (findBrandError) {
+          await session.abortTransaction();
+          await session.endSession();
+          return serverErrorResponse({
+            res,
+            error: findBrandError.message || findBrandError,
+          });
+        }
+
+        if (!findBrand || findBrand === null) {
+          await session.abortTransaction();
+          await session.endSession();
+          return notFoundResponse({
+            res,
+            message: req.body.name + ": brand not exists!",
+          });
+        }
+        if (
+          req.files[BRAND_IMAGES.BRAND_LOGO] &&
+          req.files[BRAND_IMAGES.BRAND_LOGO]?.length > 1
+        ) {
+          await session.abortTransaction();
+          session.endSession();
+          return badRequestResponse({
+            res,
+            message: "Only 1 logo image is allowed!",
+          });
+        }
+        let logo = null;
+        if (
+          req.files[BRAND_IMAGES.BRAND_LOGO] ||
+          req.files[BRAND_IMAGES.BRAND_LOGO]
+        ) {
+          const [[brandLogo], brandLogoerror] = await handleImageUpload(
+            req.files[BRAND_IMAGES.BRAND_LOGO],
+            CLOUDINARY_BRAND_BUCKET // Folder name in Cloudinary
+          );
+
+          if (brandLogoerror) {
+            await session.abortTransaction();
+            await deleteFromCloudinary(brandLogo);
+            await session.endSession();
+            return serverErrorResponse({
+              res,
+              error: brandLogoerror,
+              url: req.url,
+              method: req.method,
+            });
+          }
+          logo = brandLogo;
+        }
+
+        // return res.json({logo});
+        const [brand, brandError] = await Db.findByIdAndUpdate({
+          collection: COLLECTION_NAMES.BRANDMODEL,
+          id,
+          body: {
+            $set: {
+              ...(req.body.name && { name: req.body.name }),
+              ...(logo && { logo }),
+              ...(logo || (req.body.name && { updatedBy: req.user.id })),
+            },
+          },
+          session,
+        });
+
+        if (brandError) {
+          await session.abortTransaction();
+          await session.endSession();
+          return unprocessableEntityResponse({
+            res,
+            message: brandError,
+            error: brandError.message || brandError,
+          });
+        }
+
+        await session.commitTransaction();
+        await session.endSession();
+        return successResponse({
+          res,
+          data: brand,
+        });
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        return serverErrorResponse({
+          res,
+          message: "Error while uploading images!",
+          error: error.message || error,
+        });
+      }
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return serverErrorResponse({
+      res,
+      message: "Error while updating brand",
+      error: error.message || error,
+    });
+  }
+};
+
+exports.deleteBrandImage = async (req, res) => {
+  const session = await Db.mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { id } = req.params;
+    const { uuid } = req.params;
+    let brandLogo = [];
+
+    const [findBrand, findBrandError] = await Db.fetchOne({
+      collection: COLLECTION_NAMES.BRANDMODEL,
+      query: { _id: id },
+    });
+
+    if (findBrandError) {
+      await session.abortTransaction();
+      await session.endSession();
+      return serverErrorResponse({
+        res,
+        error: findBrandError.message || findBrandError,
+      });
+    }
+
+    if (!findBrand || findBrand === null) {
+      await session.abortTransaction();
+      await session.endSession();
+      return notFoundResponse({
+        res,
+        message: req.body.name + ": brand not exists!",
+      });
+    }
+    if (findBrand?.logo?.uuid !== uuid) {
+      await session.abortTransaction();
+      await session.endSession();
+      return notFoundResponse({
+        res,
+        message: "brand logo not exists!",
+      });
+    } else {
+      const [brand, brandError] = await Db.findByIdAndUpdate({
+        collection: COLLECTION_NAMES.BRANDMODEL,
+        id,
+        body: {
+          $set: {
+            logo: null,
+          },
+        },
+        session,
+      });
+
+      if (brandError) {
+        await session.abortTransaction();
+        await session.endSession();
+        return unprocessableEntityResponse({
+          res,
+          message: brandError,
+          error: brandError.message || brandError,
+        });
+      }
+    }
+    brandLogo.push(findBrand?.logo);
+    await deleteFromCloudinary(brandLogo);
+    
+    await session.commitTransaction();
+    await session.endSession();
+    return successResponse({
+      res,
+      message: "Brand logo deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return serverErrorResponse({
+      res,
+      message: "Error while deleting brand logo",
       error: error.message || error,
     });
   }

@@ -42,12 +42,7 @@ const productDesign = {
   tags: {
     type: Array,
   },
-  brand: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-  },
+  brandId: mongoose.Schema.Types.ObjectId,
   isActive: {
     type: Boolean,
     default: true,
