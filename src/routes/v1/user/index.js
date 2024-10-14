@@ -13,12 +13,14 @@ const {
 const cartRouter = require('./cart');
 const addressRouter = require("./address");
 const userOrderRouter = require("./order");
+const userProductRouter = require("./product");
 
 const userRouter = Router();
 
 userRouter.use('/cart', cartRouter);
 userRouter.use('/address', addressRouter);
 userRouter.use('/order', userOrderRouter);
+userRouter.use('/products', userProductRouter);
 
 userRouter.put(
   "/password",
