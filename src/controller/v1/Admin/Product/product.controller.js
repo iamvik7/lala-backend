@@ -9,6 +9,7 @@ const {
   unprocessableEntityResponse,
   successResponse,
   limitExceeded,
+  notFoundResponse,
 } = require("../../../../../brain/utils/response");
 const { productSchema } = require("../../../../joi/v1/Product");
 const {
@@ -74,7 +75,7 @@ exports.addProduct = async (req, res) => {
       }
 
       try {
-        if(req.body.tags) req.body.tags = JSON.parse(req.body.tags);
+        if (req.body.tags) req.body.tags = JSON.parse(req.body.tags);
         const valid = productSchema.productValidator.validate(req.body, {
           abortEarly: true,
         });
@@ -116,8 +117,33 @@ exports.addProduct = async (req, res) => {
           weight,
           tags,
           categoryId,
-          brand
+          brandId,
         } = req.body;
+
+        const [fetchBrand, fetchBrandError] = await Db.fetchOne({
+          collection: COLLECTION_NAMES.BRANDMODEL,
+          query: { _id: brandId },
+        });
+
+        if (fetchBrandError) {
+          await session.abortTransaction();
+          await deleteFromCloudinary(uploadedImages.flat());
+          await session.endSession();
+          return serverErrorResponse({
+            res,
+            error: fetchBrandError.message || fetchBrandError,
+          });
+        }
+
+        if (!fetchBrand || fetchBrand === null) {
+          await session.abortTransaction();
+          await deleteFromCloudinary(uploadedImages.flat());
+          await session.endSession();
+          return notFoundResponse({
+            res,
+            message: "Brand not exist",
+          });
+        }
 
         const [product, productError] = await productService.createProduct({
           name,
@@ -129,7 +155,7 @@ exports.addProduct = async (req, res) => {
           images,
           tags,
           categoryId,
-          brand,
+          brandId,
           userId: req.user.id,
           session,
         });
@@ -151,7 +177,7 @@ exports.addProduct = async (req, res) => {
         });
       } catch (error) {
         await session.abortTransaction();
-        await deleteFromCloudinary(uploadedImages);
+        await deleteFromCloudinary(uploadedImages.flat());
         await session.endSession();
         return serverErrorResponse({
           res,

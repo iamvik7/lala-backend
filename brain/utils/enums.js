@@ -15,6 +15,11 @@ const PRODUCT_IMAGES = {
   ERROR_MESSAGE: "Only five image can be uploaded at a time",
 };
 
+const BRAND_IMAGES = {
+  BRAND_LOGO: "logo",
+  ERROR_MESSAGE: "Only five image can be uploaded at a time",
+};
+
 const RBAC_ACTIONS = {
   CREATE_ANY: "createAny",
   CREATE_OWN: "createOwn",
@@ -41,7 +46,7 @@ const RBAC_RESOURCES = {
   CART: "cart",
   ORDER: "oder",
   ADDRESS: "address",
-  //   LIVE: 'live',
+  BRAND: "brand",
   //   CATEGORY: 'category',
   //   DASHBOARD:'dashboard',
   //   PLAN:"plan",
@@ -54,4 +59,5 @@ module.exports = {
   ORDER_STATUS,
   CATEGORY_IMAGES,
   PRODUCT_IMAGES,
+  BRAND_IMAGES,
 };

@@ -18,6 +18,7 @@ const {
   unauthorizedResponse,
   alreadyExists,
   limitExceeded,
+  notFoundResponse,
 } = require("../../../../../brain/utils/response");
 
 const { categorySchema } = require("../../../../joi/v1/Category");
@@ -118,7 +119,7 @@ exports.addCategory = async (req, res) => {
 
         const [
           [categoryIcon, categoryIconerror],
-          [categoryLogo, categoryLogoerror],
+          [categoryImages, categoryLogoerror],
         ] = await Promise.all([
           await handleImageUpload(
             req.files[CATEGORY_IMAGES.CATEGORY_ICON],
@@ -132,7 +133,7 @@ exports.addCategory = async (req, res) => {
 
         if (categoryIconerror || categoryLogoerror) {
           await session.abortTransaction();
-          await deleteFromCloudinary(categoryIcon || categoryLogo);
+          await deleteFromCloudinary(categoryIcon || categoryImages);
           await session.endSession();
           return serverErrorResponse({
             res,
@@ -142,7 +143,7 @@ exports.addCategory = async (req, res) => {
           });
         }
         const [icon] = categoryIcon || null;
-        const [logo] = categoryLogo || null;
+        const [logo] = categoryImages || null;
 
         // return res.json({logo, icon});
         const [category, categoryError] = await categoryService.categoryAdd(
@@ -296,6 +297,98 @@ exports.updateCategory = async (req, res) => {
     return serverErrorResponse({
       res,
       message: "Error while updating category!",
+    });
+  }
+};
+
+exports.deleteCategoryImage = async (req, res) => {
+  const session = await Db.mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { id } = req.params;
+    const { uuid } = req.params;
+    const type = req.query.type;
+
+    let categoryImages = [];
+    
+    const [findCategory, findCategoryError] = await Db.fetchOne({
+      collection: COLLECTION_NAMES.CATEGORYMODEL,
+      query: { _id: id },
+    });
+    
+    if (findCategoryError) {
+      await session.abortTransaction();
+      await session.endSession();
+      return serverErrorResponse({
+        res,
+        error: findCategoryError.message || findCategoryError,
+      });
+    }
+    
+    if (!findCategory || findCategory === null) {
+      await session.abortTransaction();
+      await session.endSession();
+      return notFoundResponse({
+        res,
+        message: req.body.name + ": category not exists!",
+      });
+    }
+    if (
+      (type === "logo" && findCategory?.logo?.uuid !== uuid) ||
+      (type === "icon" && findCategory?.icon?.uuid !== uuid)
+    ) {
+      await session.abortTransaction();
+      await session.endSession();
+      return notFoundResponse({
+        res,
+        message: "Category image not exists!",
+      });
+    } else {
+      const [brand, brandError] = await Db.findByIdAndUpdate({
+        collection: COLLECTION_NAMES.CATEGORYMODEL,
+        id,
+        body: {
+          $set: {
+            ...(type === "logo"
+              ? { logo: null }
+              : type === "icon" && { icon: null }),
+            },
+          },
+          session,
+        });
+
+      if (brandError) {
+        await session.abortTransaction();
+        await session.endSession();
+        return unprocessableEntityResponse({
+          res,
+          message: brandError,
+          error: brandError.message || brandError,
+        });
+      }
+    }
+    categoryImages.push(
+      type === "logo"
+      ? findCategory?.logo
+      : type === "icon" && findCategory?.icon
+    );
+    
+    console.log(categoryImages)
+    await deleteFromCloudinary(categoryImages);
+
+    await session.commitTransaction();
+    await session.endSession();
+    return successResponse({
+      res,
+      message: "Cateory images deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return serverErrorResponse({
+      res,
+      message: "Error while deleting category images",
+      error: error.message || error,
     });
   }
 };

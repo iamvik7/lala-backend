@@ -11,6 +11,7 @@ const {
   addCategory,
   getAllCategories,
   updateCategory,
+  deleteCategoryImage,
 } = require("../../../../controller/v1/Admin/Category/category.controller");
 
 const categoryRouter = Router();
@@ -48,5 +49,17 @@ categoryRouter.put(
     ),
   ],
   updateCategory
+);
+
+categoryRouter.delete(
+  "/image/:id/:uuid",
+  [
+    isAuthenticated,
+    AccessControlMiddleware.checkAccess(
+      RBAC_ACTIONS.UPDATE_OWN,
+      RBAC_RESOURCES.CATEGORY
+    ),
+  ],
+  deleteCategoryImage
 );
 module.exports = categoryRouter;

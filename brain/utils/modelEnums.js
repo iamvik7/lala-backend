@@ -6,6 +6,7 @@ const productBinModel = require("../model/Product/product.bin.model");
 const cartModel = require("../model/Cart/cart.model");
 const orderModel = require("../model/Order/order.model");
 const addressModel = require("../model/Address/address.model");
+const brandModel = require("../model/Brand/brand.model");
 
 exports.COLLECTIONS = {
   USER_COLLECTION: "users",
@@ -16,6 +17,7 @@ exports.COLLECTIONS = {
   CART_COLLECTION: "carts",
   ORDER_COLLECTION: "orders",
   ADDRESS_COLLECTION: "addresses",
+  BRAND_COLLECTION: "brands",
 };
 
 exports.DB_MODELS = {
@@ -27,6 +29,7 @@ exports.DB_MODELS = {
   cartModel: cartModel,
   orderModel: orderModel,
   addressModel: addressModel,
+  brandModel: brandModel,
 };
 
 exports.COLLECTION_NAMES = {
@@ -38,4 +41,5 @@ exports.COLLECTION_NAMES = {
   CARTMODEL: "cartModel",
   ORDERMODEL: "orderModel",
   ADDRESSMODEL: "addressModel",
+  BRANDMODEL: "brandModel",
 };

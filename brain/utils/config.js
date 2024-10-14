@@ -1,9 +1,9 @@
-require('dotenv').config({ path: '' });
-if (!process.env.NODE_ENV) require('dotenv').config({ path: '../../.env' });
+require("dotenv").config({ path: "" });
+if (!process.env.NODE_ENV) require("dotenv").config({ path: "../../.env" });
 
-console.log("process.env.NODE_ENV", process.env.NODE_ENV)
-console.log("process.env.PORT", process.env.PORT)
-console.log("DB_USER", process.env.DB_USER)
+console.log("process.env.NODE_ENV", process.env.NODE_ENV);
+console.log("process.env.PORT", process.env.PORT);
+console.log("DB_USER", process.env.DB_USER);
 
 module.exports = {
   NODE_ENV: process.env.NODE_ENV,
@@ -18,6 +18,7 @@ module.exports = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_CATEGORY_BUCKET: process.env.CLOUDINARY_CATEGORY_BUCKET,
   CLOUDINARY_PRODUCT_BUCKET: process.env.CLOUDINARY_PRODUCT_BUCKET,
+  CLOUDINARY_BRAND_BUCKET: process.env.CLOUDINARY_BRAND_BUCKET,
   // SMTP_HOST: process.env.SMTP_HOST,
   // SMTP_EMAIL: process.env.SMTP_EMAIL,
   // SMTP_PASSWORD: process.env.SMTP_PASSWORD,

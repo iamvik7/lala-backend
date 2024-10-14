@@ -11,7 +11,7 @@ exports.createProduct = async ({
   images,
   tags,
   categoryId,
-  brand,
+  brandId,
   userId,
   session,
 }) => {
@@ -50,7 +50,7 @@ exports.createProduct = async ({
         images,
         tags,
         categoryId,
-        brand,
+        brandId,
         createdBy: userId,
       },
       session,
