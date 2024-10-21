@@ -1,12 +1,13 @@
 const Db = require("../../utils/db");
 const { COLLECTIONS, COLLECTION_NAMES } = require("../../utils/modelEnums");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getNestedChildIds = async (categoryId) => {
   try {
     const pipeline = [
       {
         $match: {
-          _id: new Db.mongoose.Types.ObjectId(categoryId),
+          _id: new ObjectId(categoryId),
         },
       },
       {
