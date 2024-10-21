@@ -11,6 +11,15 @@ exports.fetchSuggestions = async (categories, brands, search) => {
     if (categories.length > 0) {
       const [categoryExists, errForCategories] = await Db.fetchAll({
         collection: COLLECTION_NAMES.CATEGORYMODEL,
+
+
+
+
+
+
+
+
+        
         query: { name: { $in: categories } },
       });
 
