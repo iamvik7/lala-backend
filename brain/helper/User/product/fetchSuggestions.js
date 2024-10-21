@@ -64,7 +64,6 @@ exports.fetchSuggestions = async (categories, brands, search) => {
 								as: 'brands',
 							},
 						},
-
 						{
 							$addFields: {
 								productCategory: { $arrayElemAt: ['$category.name', 0] },
