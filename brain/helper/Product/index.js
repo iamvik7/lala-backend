@@ -1,5 +1,5 @@
-const { createProduct } = require("./addProduct");
+const { createProduct } = require('./addProduct');
 
 exports.productService = {
-    createProduct
-}
+	createProduct,
+};

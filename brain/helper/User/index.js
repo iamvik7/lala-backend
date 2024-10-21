@@ -1,5 +1,5 @@
-const { createUser } = require("./createUser");
+const { createUser } = require('./createUser');
 
 exports.userService = {
-  createUser,
+	createUser,
 };

@@ -1,5 +1,5 @@
-const { fetchSuggestions } = require("./fetchSuggestions");
+const { fetchSuggestions } = require('./fetchSuggestions');
 
 exports.userProductHelper = {
-  fetchSuggestions,
+	fetchSuggestions,
 };
