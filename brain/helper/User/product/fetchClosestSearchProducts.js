@@ -30,7 +30,6 @@ exports.fetchClosestSearchProduct = async (search, limit = 20) => {
     const parsedLimit = parseInt(limit, 10);
     const searchLetters = search.split('').filter(Boolean);
     const extractedKeywords = await extractKeywords(search);
-
     // If keywords are found, prioritize searching using those keywords
     if (extractedKeywords.length > 0) {
       const regexKeywords = extractedKeywords.join('|');
@@ -105,7 +104,7 @@ exports.fetchClosestSearchProduct = async (search, limit = 20) => {
               _id: 1,
               name: 1,
               description: 1,
-              bannerImages: 1,
+              images: 1,
               categoryId: 1,
               productCategory: 1,
               views: 1,
@@ -115,7 +114,6 @@ exports.fetchClosestSearchProduct = async (search, limit = 20) => {
       });
 
       if (errForKeywordMatch) return [null, errForKeywordMatch];
-
       if (keywordMatchResults.length > 0) {
         console.log('Keyword Match Results: ', keywordMatchResults.length);
         return [keywordMatchResults, null];
@@ -197,7 +195,6 @@ exports.fetchClosestSearchProduct = async (search, limit = 20) => {
     let [fallbackResults, errForFallback] = await Db.aggregate({
       collection: COLLECTION_NAMES.PRODUCTMODEL,
       query: [
-        { $match: { isActive: true } },
         ...letterFrequencyStage,
         totalFrequencyStage,
         {
@@ -211,7 +208,7 @@ exports.fetchClosestSearchProduct = async (search, limit = 20) => {
         {
           $addFields: {
             productCategory: {
-              $arrayElemAt: ['$category.name', 0],
+              $arrayElemAt: ['$categories.name', 0],
             },
           },
         },
