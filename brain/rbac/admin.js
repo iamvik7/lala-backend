@@ -8,6 +8,7 @@ module.exports = {
     'create:own': ['*'],
     'read:any': ['*'],
     'update:own': ['*'],
+    'delete:own': ['*'],
   },
   [RBAC_RESOURCES.PRODUCT]: {
     'create:own': ['*'],
