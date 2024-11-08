@@ -270,6 +270,23 @@ exports.getAllCategories = async (req, res) => {
           },
         },
       },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $project: {
+          name: 1,
+          createdBy: 1,
+          createdAt: {
+            $dateToString: { format: '%d %b %Y', date: '$createdAt' },
+          },
+          updatedAt: {
+            $dateToString: { format: '%d %b %Y', date: '$updatedAt' },
+          },
+          hasChilds: 1,
+          subCategoryCount: 1,
+        },
+      },
     ];
 
     const [categories, categoriesError] = await Db.aggregate({
@@ -293,7 +310,7 @@ exports.getAllCategories = async (req, res) => {
         query: { ...matchStage },
       }),
       await Db.count({
-        collection: COLLECTION_NAMES.CATEGORYMODEL,
+        collection: COLLECTION_NAMES.CATEGORYBINMODEL,
         query: { ...matchStage },
       }),
     ];
@@ -478,6 +495,174 @@ exports.deleteCategoryImage = async (req, res) => {
     return serverErrorResponse({
       res,
       message: 'Error while deleting category images',
+      error: error.message || error,
+    });
+  }
+};
+
+exports.getSpeicificCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    let [findCategory, findCategoryError] = await Db.fetchOne({
+      collection: COLLECTION_NAMES.CATEGORYMODEL,
+      query: { _id: categoryId },
+      projection: {
+        __v: 0,
+        updatedAt: 0,
+        createdAt: 0,
+        updatedBy: 0,
+        createdBy: 0,
+      },
+    });
+
+    if (findCategoryError)
+      return serverErrorResponse({
+        res,
+        error: findCategoryError.message || findCategoryError,
+      });
+
+    if (!findCategory)
+      return notFoundResponse({
+        res,
+        message: 'Category not exists',
+      });
+
+    if (findCategory?.parent !== null) {
+      const [findParent, findParentError] = await Db.fetchOne({
+        collection: COLLECTION_NAMES.CATEGORYMODEL,
+        query: { _id: findCategory?.parent },
+        projection: { name: 1 },
+      });
+
+      if (findParentError)
+        return serverErrorResponse({
+          res,
+          error: findParentError.message || findParentError,
+        });
+
+      if (!findParent)
+        return notFoundResponse({ res, message: 'Parent category not exists' });
+
+      findCategory = {
+        ...findCategory,
+        selectedCategory: findParent?.name,
+      };
+    }
+
+    return successResponse({
+      res,
+      data: findCategory,
+    });
+  } catch (error) {
+    return serverErrorResponse({
+      res,
+      message: 'Error while fetching category details',
+      error: error.message || error,
+    });
+  }
+};
+
+exports.categoryDropdown = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+    const search = req.query.search || '';
+
+    const matchStage = {
+      name: {
+        $regex: `.*${search.replace(/\s+/g, '-').split('').join('.*')}.*`,
+        $options: 'i',
+      },
+      parent: req.body.parentId
+        ? new Db.mongoose.Types.ObjectId(req.body.parentId)
+        : null,
+    };
+
+    const pipeline = [
+      {
+        $match: {
+          ...matchStage,
+        },
+      },
+      {
+        $graphLookup: {
+          from: COLLECTIONS.CATEGORY_COLLECTION,
+          startWith: '$_id',
+          connectFromField: '_id',
+          connectToField: 'parent',
+          as: 'hasChilds',
+          depthField: 'depth',
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $lookup: {
+          from: COLLECTIONS.USER_COLLECTION,
+          localField: 'createdBy',
+          foreignField: '_id',
+          as: 'createdBy',
+        },
+      },
+      {
+        $set: {
+          subCategoryCount: {
+            $size: '$hasChilds',
+          },
+          hasChilds: {
+            $cond: {
+              if: { $gt: [{ $size: '$hasChilds' }, 0] },
+              then: true,
+              else: false,
+            },
+          },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $project: {
+          name: 1,
+          hasChilds: 1,
+        },
+      },
+    ];
+
+    const [categories, categoriesError] = await Db.aggregate({
+      collection: COLLECTION_NAMES.CATEGORYMODEL,
+      query: [...pipeline, { $skip: offset }, { $limit: limit }],
+    });
+
+    if (categoriesError) {
+      return unprocessableEntityResponse({
+        res,
+        error: categoriesError,
+      });
+    }
+
+    const [mainCount, mainCountError] = await Db.count({
+      collection: COLLECTION_NAMES.CATEGORYMODEL,
+      query: { ...matchStage },
+    });
+
+    if (mainCountError)
+      return serverErrorResponse({
+        res,
+        error: mainCountError.message || mainCountError,
+      });
+
+    return successResponse({
+      res,
+      data: {
+        categories,
+        main: mainCount,
+      },
+    });
+  } catch (error) {
+    return serverErrorResponse({
+      res,
+      message: 'Error while fetching category for dropdown',
       error: error.message || error,
     });
   }

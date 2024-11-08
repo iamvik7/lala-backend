@@ -12,6 +12,8 @@ const {
   getAllCategories,
   updateCategory,
   deleteCategoryImage,
+  getSpeicificCategory,
+  categoryDropdown,
 } = require('../../../../controller/v1/Admin/Category/category.controller');
 
 const categoryRouter = Router();
@@ -38,6 +40,17 @@ categoryRouter.post(
   ],
   getAllCategories
 );
+categoryRouter.post(
+  '/dropdown',
+  [
+    isAuthenticated,
+    AccessControlMiddleware.checkAccess(
+      RBAC_ACTIONS.READ_ANY,
+      RBAC_RESOURCES.CATEGORY
+    ),
+  ],
+  categoryDropdown
+);
 
 categoryRouter.put(
   '/update/:categoryId',
@@ -61,5 +74,17 @@ categoryRouter.delete(
     ),
   ],
   deleteCategoryImage
+);
+
+categoryRouter.get(
+  '/:categoryId',
+  [
+    isAuthenticated,
+    AccessControlMiddleware.checkAccess(
+      RBAC_ACTIONS.READ_ANY,
+      RBAC_RESOURCES.CATEGORY
+    ),
+  ],
+  getSpeicificCategory
 );
 module.exports = categoryRouter;
