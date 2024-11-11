@@ -597,14 +597,6 @@ exports.categoryDropdown = async (req, res) => {
         },
       },
       {
-        $lookup: {
-          from: COLLECTIONS.USER_COLLECTION,
-          localField: 'createdBy',
-          foreignField: '_id',
-          as: 'createdBy',
-        },
-      },
-      {
         $set: {
           subCategoryCount: {
             $size: '$hasChilds',
