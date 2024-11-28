@@ -388,7 +388,7 @@ exports.getAllBrands = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
     const search = req.query.search || '';
-
+    console.log('0000000000000000000000000000000000000000000');
     const matchStage = {
       name: {
         $regex: `.*${search.replace(/\s+/g, '-').split('').join('.*')}.*`,
@@ -498,6 +498,7 @@ exports.getAllBrands = async (req, res) => {
       },
     ];
 
+    console.log('111111111111111111111111111111111111111111111');
     const [brands, brandsError] = await Db.aggregate({
       collection: COLLECTION_NAMES.BRANDMODEL,
       query: [...pipeline, { $skip: offset }, { $limit: limit }],
@@ -509,6 +510,7 @@ exports.getAllBrands = async (req, res) => {
         error: brandsError.message || brandsError,
       });
     }
+    console.log('222222222222222222222222222222222222222222222222222');
 
     const [brandCount, brandCountError] = await Db.count({
       collection: COLLECTION_NAMES.BRANDMODEL,
@@ -522,6 +524,7 @@ exports.getAllBrands = async (req, res) => {
       });
     }
 
+    console.log('33333333333333333333333333333333333333333333333333');
     return successResponse({
       res,
       data: {
