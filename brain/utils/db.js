@@ -32,7 +32,7 @@ const aggregate = async ({ collection, query }) => {
 const fetchOne = async ({ collection, query, projection = null }) => {
   try {
     const modelName = DB_MODELS[collection];
-    const data = await modelName.findOne(query, projection).lean();
+    const data = await modelName.findOne(query, projection);
     return [data, null];
   } catch (err) {
     logger.error(`Error while fetching ${collection}: `, err.message);
