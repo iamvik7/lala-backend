@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
+    "start": "pm2 start server.js --name lala-backend --watch",
     "prepare": "husky",
     "precommit": "eslint .",
     "format": "prettier . --write"
@@ -33,6 +33,7 @@
     "natural": "^8.0.1",
     "nodemon": "^3.1.4",
     "path": "^0.12.7",
+    "pm2": "^5.4.3",
     "sharp": "^0.33.5",
     "uuid": "^10.0.0",
     "winston": "^3.14.2",
