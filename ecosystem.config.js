@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'backend',
       script: './server.js',
-      instances: 'max',
+      instances: '4',
       exec_mode: 'cluster',
       watch: false,
       max_memory_restart: '1G',
