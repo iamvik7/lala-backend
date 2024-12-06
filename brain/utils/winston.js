@@ -16,12 +16,12 @@ const logger = createLogger({
   transports: [
     new transports.Console({
       format: combine(
-        colorize(), // Colorize logs for console
-        customFormat
+        colorize(), // Colorize logs for console output
+        customFormat // Use the custom log format defined above
       ),
     }), // Log to the console
     // Remove or comment out the file transport since it won't work in Vercel
-    // new transports.File({ filename: 'logs/app.log' }), // Log to a file
+    // new transports.File({ filename: 'logs/app.log' }), // Log to a file (not supported in Vercel)
   ],
   exitOnError: false, // Do not exit on handled exceptions
 });
