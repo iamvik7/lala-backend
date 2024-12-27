@@ -1,11 +1,11 @@
-const multer = require('multer');
-const { productService } = require('../../../../../brain/helper/Product');
-const Db = require('../../../../../brain/utils/db');
-const { PRODUCT_IMAGES } = require('../../../../../brain/utils/enums');
+const multer = require("multer");
+const { productService } = require("../../../../../brain/helper/Product");
+const Db = require("../../../../../brain/utils/db");
+const { PRODUCT_IMAGES } = require("../../../../../brain/utils/enums");
 const {
   COLLECTION_NAMES,
   COLLECTIONS,
-} = require('../../../../../brain/utils/modelEnums');
+} = require("../../../../../brain/utils/modelEnums");
 const {
   serverErrorResponse,
   badRequestResponse,
@@ -13,22 +13,22 @@ const {
   successResponse,
   limitExceeded,
   notFoundResponse,
-} = require('../../../../../brain/utils/response');
-const { productSchema } = require('../../../../joi/v1/Product');
+} = require("../../../../../brain/utils/response");
+const { productSchema } = require("../../../../joi/v1/Product");
 const {
   deleteFromCloudinary,
   upload,
-} = require('../../../../../brain/utils/cloudinary');
+} = require("../../../../../brain/utils/cloudinary");
 const {
   handleImageUpload,
-} = require('../../../../../brain/utils/handleImageUpload');
+} = require("../../../../../brain/utils/handleImageUpload");
 const {
   CLOUDINARY_PRODUCT_BUCKET,
-} = require('../../../../../brain/utils/config');
+} = require("../../../../../brain/utils/config");
 const {
   ImageDeleteHelper,
-} = require('../../../../../brain/helper/ImageDeleteHelper/ImageDeleteHelper');
-const productBinHelper = require('../../../../../brain/helper/Product/Bin');
+} = require("../../../../../brain/helper/ImageDeleteHelper/ImageDeleteHelper");
+const productBinHelper = require("../../../../../brain/helper/Product/Bin");
 
 exports.addProduct = async (req, res) => {
   const session = await Db.mongoose.startSession();
@@ -42,12 +42,12 @@ exports.addProduct = async (req, res) => {
     UploadMultiple(req, res, async (error) => {
       if (error instanceof multer.MulterError) {
         // return res.json(error)
-        console.error('error in multer file upload : ', error);
-        if (error === 'File too large' || error.message === 'File too large') {
+        console.error("error in multer file upload : ", error);
+        if (error === "File too large" || error.message === "File too large") {
           return limitExceeded({
             res,
             message:
-              'Image size is too large only image upto 10 MB is supported!',
+              "Image size is too large only image upto 10 MB is supported!",
             error: error.message || error,
           });
         }
@@ -64,7 +64,7 @@ exports.addProduct = async (req, res) => {
         await session.endSession();
         return badRequestResponse({
           res,
-          message: 'Required images are missing.',
+          message: "Required images are missing.",
         });
       }
 
@@ -77,7 +77,7 @@ exports.addProduct = async (req, res) => {
         await session.endSession();
         return badRequestResponse({
           res,
-          message: 'Minimum 2 and maximum 5 images are allowed!',
+          message: "Minimum 2 and maximum 5 images are allowed!",
         });
       }
 
@@ -148,7 +148,7 @@ exports.addProduct = async (req, res) => {
           await session.endSession();
           return notFoundResponse({
             res,
-            message: 'Brand not exist',
+            message: "Brand not exist",
           });
         }
 
@@ -188,7 +188,7 @@ exports.addProduct = async (req, res) => {
         await session.endSession();
         return serverErrorResponse({
           res,
-          message: 'Error while creating product!',
+          message: "Error while creating product!",
           error: error.message || error,
         });
       }
@@ -198,7 +198,7 @@ exports.addProduct = async (req, res) => {
     await session.endSession();
     return serverErrorResponse({
       res,
-      message: 'Error while creating product!',
+      message: "Error while creating product!",
       error: error.message || error,
     });
   }
@@ -216,12 +216,12 @@ exports.updateProduct = async (req, res) => {
     UploadMultiple(req, res, async (error) => {
       if (error instanceof multer.MulterError) {
         // return res.json(error)
-        console.error('error in multer file upload : ', error);
-        if (error === 'File too large' || error.message === 'File too large') {
+        console.error("error in multer file upload : ", error);
+        if (error === "File too large" || error.message === "File too large") {
           return limitExceeded({
             res,
             message:
-              'Image size is too large only image upto 10 MB is supported!',
+              "Image size is too large only image upto 10 MB is supported!",
             error: error.message || error,
           });
         }
@@ -241,7 +241,7 @@ exports.updateProduct = async (req, res) => {
         await session.endSession();
         return badRequestResponse({
           res,
-          message: 'Maximum 5 images are allowed!',
+          message: "Maximum 5 images are allowed!",
         });
       }
 
@@ -264,7 +264,7 @@ exports.updateProduct = async (req, res) => {
         await session.endSession();
         return notFoundResponse({
           res,
-          message: 'Product not exists.',
+          message: "Product not exists.",
         });
       }
 
@@ -323,7 +323,7 @@ exports.updateProduct = async (req, res) => {
           await session.endSession();
           return badRequestResponse({
             res,
-            message: 'Maximum 5 images are allowed!',
+            message: "Maximum 5 images are allowed!",
           });
         }
         const updateData = {
@@ -347,7 +347,7 @@ exports.updateProduct = async (req, res) => {
             session,
           });
 
-        if (updateProductError === 'Category not exist!') {
+        if (updateProductError === "Category not exist!") {
           await session.abortTransaction();
           images?.flat() && (await deleteFromCloudinary(images?.flat()));
           await session.endSession();
@@ -357,7 +357,7 @@ exports.updateProduct = async (req, res) => {
           });
         }
 
-        if (updateProductError === 'Product already exists!') {
+        if (updateProductError === "Product already exists!") {
           await session.abortTransaction();
           images?.flat() && (await deleteFromCloudinary(images?.flat()));
           await session.endSession();
@@ -367,7 +367,7 @@ exports.updateProduct = async (req, res) => {
           });
         }
 
-        if (updateProductError === 'Brand not exist!') {
+        if (updateProductError === "Brand not exist!") {
           await session.abortTransaction();
           images?.flat() && (await deleteFromCloudinary(images?.flat()));
           await session.endSession();
@@ -391,7 +391,7 @@ exports.updateProduct = async (req, res) => {
         await session.endSession();
         return successResponse({
           res,
-          message: 'Product updated successfully',
+          message: "Product updated successfully",
           data: updateProduct,
         });
       } catch (error) {
@@ -408,7 +408,7 @@ exports.updateProduct = async (req, res) => {
     await session.endSession();
     return serverErrorResponse({
       res,
-      message: 'Error while updating product!',
+      message: "Error while updating product!",
       error: error.message || error,
     });
   }
@@ -420,7 +420,7 @@ exports.deleteProductImage = async (req, res) => {
   try {
     const { productId } = req.params;
     const { uuid } = req.params;
-    const type = req.query.type || 'logo';
+    const type = req.query.type || "logo";
 
     const [deleteImage, deleteImageError] = await ImageDeleteHelper({
       fileId: productId,
@@ -431,21 +431,21 @@ exports.deleteProductImage = async (req, res) => {
       session,
     });
 
-    if (deleteImageError === 'file not exists!') {
+    if (deleteImageError === "file not exists!") {
       await session.abortTransaction();
       session.endSession();
       return notFoundResponse({
         res,
-        message: 'Product not exists',
+        message: "Product not exists",
       });
     }
 
-    if (deleteImageError === 'Image not found in the product') {
+    if (deleteImageError === "Image not found in the product") {
       await session.abortTransaction();
       session.endSession();
       return notFoundResponse({
         res,
-        message: 'Product image not exists',
+        message: "Product image not exists",
       });
     }
 
@@ -462,7 +462,7 @@ exports.deleteProductImage = async (req, res) => {
       await session.endSession();
       return successResponse({
         res,
-        message: 'Brand logo deleted successfully',
+        message: "Brand logo deleted successfully",
       });
     }
   } catch (error) {
@@ -470,7 +470,7 @@ exports.deleteProductImage = async (req, res) => {
     session.endSession();
     return serverErrorResponse({
       res,
-      message: 'Error while deleting brand logo',
+      message: "Error while deleting brand logo",
       error: error.message || error,
     });
   }
@@ -480,13 +480,13 @@ exports.getAllProducts = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
-    const search = req.query.search || '';
-    const status = req.query.status || 'all';
+    const search = req.query.search || "";
+    const status = req.query.status || "all";
 
     const matchStage = {
       name: {
-        $regex: `.*${search.replace(/\s+/g, '-').split('').join('.*')}.*`,
-        $options: 'i',
+        $regex: `.*${search.replace(/\s+/g, "-").split("").join(".*")}.*`,
+        $options: "i",
       },
     };
 
@@ -494,67 +494,67 @@ exports.getAllProducts = async (req, res) => {
       {
         $match: {
           ...matchStage,
-          ...(status === 'active'
+          ...(status === "active"
             ? { isActive: true }
-            : status === 'pending'
-              ? { isActive: false }
-              : {}),
+            : status === "pending"
+            ? { isActive: false }
+            : {}),
         },
       },
       {
         $lookup: {
           from: COLLECTIONS.BRAND_COLLECTION,
-          localField: 'brandId',
-          foreignField: '_id',
-          as: 'brand',
+          localField: "brandId",
+          foreignField: "_id",
+          as: "brand",
         },
       },
       {
         $lookup: {
           from: COLLECTIONS.CATEGORY_COLLECTION,
-          localField: 'categoryId',
-          foreignField: '_id',
-          as: 'category',
+          localField: "categoryId",
+          foreignField: "_id",
+          as: "category",
         },
       },
       {
         $lookup: {
           from: COLLECTIONS.USER_COLLECTION,
-          localField: 'createdBy',
-          foreignField: '_id',
-          as: 'createdBy',
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
         },
       },
       {
         $set: {
           brand: {
-            $arrayElemAt: ['$brand.name', 0],
+            $arrayElemAt: ["$brand.name", 0],
           },
           category: {
-            $arrayElemAt: ['$category.name', 0],
+            $arrayElemAt: ["$category.name", 0],
           },
 
           createdAt: {
             $dateToString: {
-              format: '%d %b %Y',
-              date: '$createdAt',
+              format: "%d %b %Y",
+              date: "$createdAt",
             },
           },
           updatedAt: {
             $dateToString: {
-              format: '%d %b %Y',
-              date: '$updatedAt',
+              format: "%d %b %Y",
+              date: "$updatedAt",
             },
           },
           createdBy: {
             $reduce: {
-              input: '$createdBy',
-              initialValue: '',
+              input: "$createdBy",
+              initialValue: "",
               in: {
                 $concat: [
-                  '$$value',
-                  { $cond: [{ $eq: ['$$value', ''] }, '', ' '] },
-                  { $concat: ['$$this.firstname', ' ', '$$this.lastname'] },
+                  "$$value",
+                  { $cond: [{ $eq: ["$$value", ""] }, "", " "] },
+                  { $concat: ["$$this.firstname", " ", "$$this.lastname"] },
                 ],
               },
             },
@@ -583,7 +583,7 @@ exports.getAllProducts = async (req, res) => {
 
     const [fetchProducts, fetchProductsError] = await Db.aggregate({
       collection:
-        status === 'deleted'
+        status === "deleted"
           ? COLLECTION_NAMES.PRODUCTBINMODEL
           : COLLECTION_NAMES.PRODUCTMODEL,
       query: [...pipeline, { $skip: offset }, { $limit: limit }],
@@ -638,15 +638,10 @@ exports.getAllProducts = async (req, res) => {
       res,
       data: {
         products: fetchProducts,
-        ...(status === 'deleted'
-          ? {
-              deleted: deletedCount || 0,
-            }
-          : {
-              active: activeCount || 0,
-              pending: pendingCount || 0,
-              totalCount: allCount || 0,
-            }),
+        active: activeCount || 0,
+        pending: pendingCount || 0,
+        totalCount: allCount || 0,
+        deleted: deletedCount || 0,
       },
     });
   } catch (error) {
@@ -670,26 +665,26 @@ exports.getSpecificProduct = async (req, res) => {
       {
         $lookup: {
           from: COLLECTIONS.BRAND_COLLECTION,
-          localField: 'brandId',
-          foreignField: '_id',
-          as: 'selectedBrand',
+          localField: "brandId",
+          foreignField: "_id",
+          as: "selectedBrand",
         },
       },
       {
         $lookup: {
           from: COLLECTIONS.CATEGORY_COLLECTION,
-          localField: 'categoryId',
-          foreignField: '_id',
-          as: 'selectedCategory',
+          localField: "categoryId",
+          foreignField: "_id",
+          as: "selectedCategory",
         },
       },
       {
         $set: {
           selectedBrand: {
-            $arrayElemAt: ['$selectedBrand.name', 0],
+            $arrayElemAt: ["$selectedBrand.name", 0],
           },
           selectedCategory: {
-            $arrayElemAt: ['$selectedCategory.name', 0],
+            $arrayElemAt: ["$selectedCategory.name", 0],
           },
         },
       },
@@ -720,7 +715,7 @@ exports.getSpecificProduct = async (req, res) => {
     if (productError) {
       return serverErrorResponse({
         res,
-        message: 'Error while fetching product details!',
+        message: "Error while fetching product details!",
         error: productError.message || productError,
       });
     }
@@ -728,7 +723,7 @@ exports.getSpecificProduct = async (req, res) => {
     if (!product) {
       return badRequestResponse({
         res,
-        message: 'Product not exists',
+        message: "Product not exists",
       });
     }
     return successResponse({
@@ -738,7 +733,7 @@ exports.getSpecificProduct = async (req, res) => {
   } catch (error) {
     return serverErrorResponse({
       res,
-      message: 'Error while fetching product details!',
+      message: "Error while fetching product details!",
       error: error.message || error,
     });
   }
@@ -751,12 +746,12 @@ exports.deleteProduct = async (req, res) => {
     const [deleteProduct, deleteProductError] =
       await productBinHelper.deleteProductHelper(req.params.productId, session);
 
-    if (deleteProductError === 'Product not exists!') {
+    if (deleteProductError === "Product not exists!") {
       await session.abortTransaction();
       session.endSession();
       return notFoundResponse({
         res,
-        message: 'Product not exists!',
+        message: "Product not exists!",
       });
     }
 
@@ -773,14 +768,14 @@ exports.deleteProduct = async (req, res) => {
     session.endSession();
     return successResponse({
       res,
-      message: 'Product delete successfully!',
+      message: "Product delete successfully!",
     });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     return serverErrorResponse({
       res,
-      message: 'Error while deleting product!',
+      message: "Error while deleting product!",
       error: error.message || error,
     });
   }
@@ -796,12 +791,12 @@ exports.restoreProduct = async (req, res) => {
         session
       );
 
-    if (retoreProductError === 'Product not exists!') {
+    if (retoreProductError === "Product not exists!") {
       await session.abortTransaction();
       session.endSession();
       return notFoundResponse({
         res,
-        message: 'Product not exists!',
+        message: "Product not exists!",
       });
     }
 
@@ -818,14 +813,14 @@ exports.restoreProduct = async (req, res) => {
     session.endSession();
     return successResponse({
       res,
-      message: 'Product restored successfully!',
+      message: "Product restored successfully!",
     });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     return serverErrorResponse({
       res,
-      message: 'Error while restoring product!',
+      message: "Error while restoring product!",
       error: error.message || error,
     });
   }
