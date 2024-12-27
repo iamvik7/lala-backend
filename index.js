@@ -26,7 +26,7 @@ app.use('/api/v1', v1Router);
 
 app.get('/', (req, res, next) => {
 	res.status(200).json({
-		message: `Backend service is running and up!`,
+		message: `Backend service is running and up!!!!!!!!!!!`,
 	});
 });
 
