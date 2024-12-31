@@ -136,7 +136,7 @@ exports.login = async (req, res) => {
 			token: dataLogin,
 			user: {
 				_id: user._id,
-				name: `${user?.firstname} ${user?.lastname}`,
+				username: `${user?.firstname} ${user?.lastname}`,
 				email: user.email,
 				role: user.role,
 			},
